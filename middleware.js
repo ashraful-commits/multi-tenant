@@ -38,7 +38,7 @@ export default async function middleware(req) {
   }`;
 
   // rewrites for app pages
-  if (hostname == `app.localhost:3000`) {
+  if (hostname == `localhost:3000`) {
     const session = await getToken({ req });
     console.log(session)
     if (!session && path !== "/login") {
