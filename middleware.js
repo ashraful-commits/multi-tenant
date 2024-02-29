@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 export const config = {
+  // Define the matcher to exclude certain paths
   matcher: [
     "/((?!api/|_next/|_static/|_vercel|[\\w-]+\\.\\w+).*)",
   ],
@@ -9,34 +10,40 @@ export const config = {
 
 export default async function middleware(req) {
   const url = req.nextUrl;
-  let hostname = req.headers
-    .get("host")
-    .replace(".localhost:3000", ".multi-tenant-beryl.vercel.app");
-   
-  const searchParams = req.nextUrl.searchParams.toString();
-  const path = `${url.pathname}${
-    searchParams.length > 0 ? `?${searchParams}` : ""
-  }`;
+  const hostname = req.headers.get("host");
 
-  if (hostname == 'multi-tenant-beryl.vercel.app'||hostname == 'localhost:3000') {
-    const session = await getToken({ req });
-    if (session && path !== "/login") {
-      return NextResponse.redirect(new URL("/login", req.url));
-    } else if (!session && path == "/login") {
-      return NextResponse.redirect(new URL("/", req.url));
+  // Extract subdomain and domain from the hostname
+  const [subdomain, domain] = hostname.split('.');
+
+  // Handle requests to the main domain without subdomains
+  if (!subdomain) {
+    const path = `${url.pathname}${url.search ? `?${url.search}` : ""}`;
+
+    // Redirect to login or home page based on authentication status
+    if (domain === "multi-tenant-beryl.vercel.app" || domain === "localhost:3000") {
+      const session = await getToken({ req });
+
+      if (!session && path !== "/login") {
+        return NextResponse.redirect("/login");
+      } else if (session && path === "/login") {
+        return NextResponse.redirect("/");
+      }
+      return NextResponse.rewrite(`/ashraful${path}`);
     }
-    return NextResponse.rewrite(
-      new URL(`/ashraful${path === "/" ? "" : path}`, req.url),
-    );
+
+    // Rewrite the URL to include "/home" before the path for other domains
+    return NextResponse.rewrite(`/${domain === "multi-tenant-beryl.vercel.app" ? "home" : domain}${path}`);
   }
 
-  if (
-    hostname === "multi-tenant-beryl.vercel.app" || hostname === "localhost:3000" 
-  ) {
-    return NextResponse.rewrite(
-      new URL(`/home${path === "/" ? "" : path}`, req.url),
-    );
+  // Handle requests with subdomains
+  // Example logic for handling subdomains
+  if (subdomain === "subdomain") {
+    // Handle requests for the "subdomain" subdomain
+    // You can add specific logic for this subdomain
+    return NextResponse.rewrite(`https://${hostname}${url.pathname}${url.search ? `?${url.search}` : ""}`);
+  } else {
+    // Handle requests for other subdomains
+    // You can add specific logic for other subdomains if needed
+    return NextResponse.rewrite(`https://${subdomain}.${domain}${url.pathname}${url.search ? `?${url.search}` : ""}`);
   }
-
-  return NextResponse.rewrite(new URL(`/${hostname}${path}`, req.url));
 }
