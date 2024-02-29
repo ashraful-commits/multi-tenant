@@ -3,14 +3,14 @@ import { getToken } from "next-auth/jwt";
 
 export const config = {
   matcher: [
-    "/",
+    "/((?!api/|_next/|_static/|_vercel|[\\w-]+\\.\\w+).*)",
   ],
 };
 
 export default async function middleware(req) {
   const url = req.nextUrl;
   let hostname = req.headers
-    .get("host").replace(".localhost:3000", `.multi-tenant-beryl.vercel.app`);
+    .get("host");
 
    
   const searchParams = req.nextUrl.searchParams.toString();
@@ -20,10 +20,9 @@ export default async function middleware(req) {
 
   if (hostname == 'multi-tenant-beryl.vercel.app'||hostname == 'localhost:3000') {
     const session = await getToken({ req });
-
-    if (session && path !== "/login") {
+    if (!session && path !== "/login") {
       return NextResponse.redirect(new URL("/login", req.url));
-    } else if (!session && path == "/login") {
+    } else if (session && path == "/login") {
       return NextResponse.redirect(new URL("/", req.url));
     }
     return NextResponse.rewrite(
