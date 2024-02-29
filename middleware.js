@@ -3,23 +3,14 @@ import { getToken } from "next-auth/jwt";
 
 export const config = {
   matcher: [
-    /*
-     * Match all paths except for:
-     * 1. /api routes
-     * 2. /_next (Next.js internals)
-     * 3. /_static (inside /public)
-     * 4. all root files inside /public (e.g. /favicon.ico)
-     */
-    "/((?!api/|_next/|_static/|_vercel|[\\w-]+\\.\\w+).*)",
+    "/",
   ],
 };
 
 export default async function middleware(req) {
   const url = req.nextUrl;
-
-  // Get hostname of request (e.g. demo.vercel.pub, demo.localhost:3000)
   let hostname = req.headers
-    .get("host")
+    .get("host").replace(".localhost:3000", `.multi-tenant-beryl.vercel.app`);
 
    
   const searchParams = req.nextUrl.searchParams.toString();
@@ -27,13 +18,12 @@ export default async function middleware(req) {
     searchParams.length > 0 ? `?${searchParams}` : ""
   }`;
 
-  // rewrites for app pages
   if (hostname == 'multi-tenant-beryl.vercel.app'||hostname == 'localhost:3000') {
     const session = await getToken({ req });
 
-    if (!session && path !== "/login") {
+    if (session && path !== "/login") {
       return NextResponse.redirect(new URL("/login", req.url));
-    } else if (session && path == "/login") {
+    } else if (!session && path == "/login") {
       return NextResponse.redirect(new URL("/", req.url));
     }
     return NextResponse.rewrite(
@@ -41,8 +31,6 @@ export default async function middleware(req) {
     );
   }
 
-
-  // rewrite root application to `/home` folder
   if (
     hostname === "multi-tenant-beryl.vercel.app" || hostname === "localhost:3000" 
   ) {
@@ -51,6 +39,5 @@ export default async function middleware(req) {
     );
   }
 
-  // rewrite everything else to `/[domain]/[slug] dynamic route
   return NextResponse.rewrite(new URL(`/${hostname}${path}`, req.url));
 }
