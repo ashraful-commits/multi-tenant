@@ -31,11 +31,11 @@ export default async function middleware(req) {
   if (hostname == 'https://multi-tenant-beryl.vercel.app'||hostname == 'localhost:3000') {
     const session = await getToken({ req });
 
-    if (!session && path !== "/login") {
-      return NextResponse.redirect(new URL("/login", req.url));
-    } else if (session && path == "/login") {
-      return NextResponse.redirect(new URL("/", req.url));
-    }
+    // if (!session && path !== "/login") {
+    //   return NextResponse.redirect(new URL("/login", req.url));
+    // } else if (session && path == "/login") {
+    //   return NextResponse.redirect(new URL("/", req.url));
+    // }
     return NextResponse.rewrite(
       new URL(`/ashraful${path === "/" ? "" : path}`, req.url),
     );
