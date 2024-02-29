@@ -17,32 +17,48 @@ export const config = {
 export default async function middleware(req) {
   const url = req.nextUrl;
 
+  // Get hostname of request (e.g. demo.vercel.pub, demo.localhost:3000)
   let hostname = req.headers
     .get("host")
+    .replace(".localhost:3000", '.multi-tenant-beryl.vercel.app');
 
-    if (
-      hostname.endsWith(`.vercel.app`)
-    ) {
-      hostname = `${hostname.split(".")[0]}.vercel.app`;
-    }
+  // special case for Vercel preview deployment URLs
+  if (
+    hostname.endsWith('.multi-tenant-beryl.vercel.app')
+  ) {
+    hostname = `${hostname.split(".")[0]}.multi-tenant-beryl.vercel.app`;
+  }
+
   const searchParams = req.nextUrl.searchParams.toString();
+  // Get the pathname of the request (e.g. /, /about, /blog/first-post)
   const path = `${url.pathname}${
     searchParams.length > 0 ? `?${searchParams}` : ""
   }`;
 
   // rewrites for app pages
-  if (hostname == 'https://main.vercel.com') {
-    return NextResponse.redirect(new URL("/", req.url));
-
+  if (hostname == 'ashraful.multi-tenant-beryl.vercel.app') {
+    const session = await getToken({ req });
+    if (!session && path !== "/login") {
+      return NextResponse.redirect(new URL("/login", req.url));
+    } else if (session && path == "/login") {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
     return NextResponse.rewrite(
       new URL(`/ashraful${path === "/" ? "" : path}`, req.url),
     );
   }
 
+  // special case for `vercel.pub` domain
+  if (hostname === "https://multi-tenant-beryl.vercel.app") {
+    return NextResponse.redirect(
+      "https://multi-tenant-beryl.vercel.app",
+    );
+  }
 
   // rewrite root application to `/home` folder
   if (
-    hostname === "https://multi-tenant-beryl.vercel.app" 
+    hostname === "localhost:3000" ||
+    hostname === "https://multi-tenant-beryl.vercel.app"
   ) {
     return NextResponse.rewrite(
       new URL(`/home${path === "/" ? "" : path}`, req.url),
