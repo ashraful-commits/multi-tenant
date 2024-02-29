@@ -21,18 +21,14 @@ export default async function middleware(req) {
   let hostname = req.headers
     .get("host")
 
-    if (
-      hostname.endsWith(`.vercel.app`)
-    ) {
-      hostname = `${hostname.split(".")[0]}.vercel.app`;
-    }
+   
   const searchParams = req.nextUrl.searchParams.toString();
   const path = `${url.pathname}${
     searchParams.length > 0 ? `?${searchParams}` : ""
   }`;
 
   // rewrites for app pages
-  if (hostname == 'https://multi-tenant-beryl.vercel.app') {
+  if (hostname == 'https://multi-tenant-beryl.vercel.app'||hostname == 'localhost:3000') {
     const session = await getToken({ req });
 
     if (!session && path !== "/login") {
@@ -48,7 +44,7 @@ export default async function middleware(req) {
 
   // rewrite root application to `/home` folder
   if (
-    hostname === "https://multi-tenant-beryl.vercel.app" 
+    hostname === "https://multi-tenant-beryl.vercel.app" || hostname === "localhost:3000" 
   ) {
     return NextResponse.rewrite(
       new URL(`/home${path === "/" ? "" : path}`, req.url),
