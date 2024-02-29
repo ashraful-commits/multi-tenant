@@ -31,7 +31,7 @@ export default async function middleware(req) {
   }`;
 
   // rewrites for app pages
-  if (hostname == 'vercel.app') {
+  if (hostname == 'main.vercel.app') {
     const session = await getToken({ req });
 
     if (!session && path !== "/login") {
