@@ -38,7 +38,7 @@ export default async function middleware(req) {
       return NextResponse.redirect(new URL("/", req.url));
     }
     return NextResponse.rewrite(
-      new URL(`/app${path === "/" ? "" : path}`, req.url),
+      new URL(`/ashraful${path === "/" ? "" : path}`, req.url),
     );
   }
 
