@@ -31,7 +31,7 @@ export default async function middleware(req) {
   }`;
 
   // rewrites for app pages
-  if (hostname == 'main.vercel.app') {
+  if (hostname == 'https://main.vercel.com') {
     return NextResponse.redirect(new URL("/", req.url));
 
     return NextResponse.rewrite(
