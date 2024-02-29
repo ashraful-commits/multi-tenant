@@ -21,15 +21,6 @@ export default async function middleware(req) {
   let hostname = req.headers
     .get("host")
 
-  // special case for Vercel preview deployment URLs
-  if (
-    hostname.includes("---") &&
-    hostname.endsWith(`.${process.env.NEXT_PUBLIC_VERCEL_DEPLOYMENT_SUFFIX}`)
-  ) {
-    hostname = `${hostname.split("---")[0]}.${
-      process.env.NEXT_PUBLIC_ROOT_DOMAIN
-    }`;
-  }
 
   const searchParams = req.nextUrl.searchParams.toString();
   // Get the pathname of the request (e.g. /, /about, /blog/first-post)
@@ -54,7 +45,7 @@ export default async function middleware(req) {
 
   // rewrite root application to `/home` folder
   if (
-    hostname === "localhost:3000" 
+    hostname === "https://multi-tenant-beryl.vercel.app" 
   ) {
     return NextResponse.rewrite(
       new URL(`/home${path === "/" ? "" : path}`, req.url),
