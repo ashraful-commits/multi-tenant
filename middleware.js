@@ -32,13 +32,8 @@ export default async function middleware(req) {
 
   // rewrites for app pages
   if (hostname == 'main.vercel.app') {
-    const session = await getToken({ req });
+    return NextResponse.redirect(new URL("/", req.url));
 
-    if (!session && path !== "/login") {
-      return NextResponse.redirect(new URL("/login", req.url));
-    } else if (session && path == "/login") {
-      return NextResponse.redirect(new URL("/", req.url));
-    }
     return NextResponse.rewrite(
       new URL(`/ashraful${path === "/" ? "" : path}`, req.url),
     );
