@@ -21,7 +21,11 @@ export default async function middleware(req) {
   let hostname = req.headers
     .get("host")
 
-
+    if (
+      hostname.endsWith(`.vercel.app`)
+    ) {
+      hostname = `${hostname.split(".")[0]}.vercel.app`;
+    }
   const searchParams = req.nextUrl.searchParams.toString();
   // Get the pathname of the request (e.g. /, /about, /blog/first-post)
   const path = `${url.pathname}${
@@ -31,7 +35,7 @@ export default async function middleware(req) {
   // rewrites for app pages
   if (hostname == 'https://multi-tenant-beryl.vercel.app') {
     const session = await getToken({ req });
-    console.log(session)
+
     if (!session && path !== "/login") {
       return NextResponse.redirect(new URL("/login", req.url));
     } else if (session && path == "/login") {
