@@ -10,8 +10,8 @@ export const config = {
 export default async function middleware(req) {
   const url = req.nextUrl;
   let hostname = req.headers
-    .get("host");
-
+    .get("host")
+    .replace(".localhost:3000", ".multi-tenant-beryl.vercel.app");
    
   const searchParams = req.nextUrl.searchParams.toString();
   const path = `${url.pathname}${
