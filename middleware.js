@@ -38,7 +38,7 @@ export default async function middleware(req) {
   }`;
 
   // rewrites for app pages
-  if (hostname == `localhost:3000`) {
+  if (hostname == 'https://multi-tenant-beryl.vercel.app') {
     const session = await getToken({ req });
     console.log(session)
     if (!session && path !== "/login") {
